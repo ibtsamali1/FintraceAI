@@ -1,0 +1,337 @@
+/* ═══════════════════════════════════════════════════════════════
+   FinTrace Dashboard — Custom Styles
+   Premium dark-theme glassmorphism design system
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Background Ambience ──────────────────────────────────────── */
+body {
+    background-image:
+        radial-gradient(ellipse at 15% 0%, rgba(6, 182, 212, 0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+}
+
+/* ── Glass Morphism Card ──────────────────────────────────────── */
+.glass {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(148, 163, 184, 0.08);
+}
+.glass-lighter {
+    background: rgba(30, 41, 59, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* ── Gradient Text ────────────────────────────────────────────── */
+.gradient-text {
+    background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.gradient-text-cyan {
+    background: linear-gradient(135deg, #22d3ee, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Drop Zone ────────────────────────────────────────────────── */
+.drop-zone {
+    border: 2px dashed rgba(6, 182, 212, 0.25);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(6, 182, 212, 0.04) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.drop-zone:hover {
+    border-color: rgba(6, 182, 212, 0.45);
+}
+.drop-zone:hover::before {
+    opacity: 1;
+}
+.drop-zone.dragover {
+    border-color: #06b6d4;
+    border-style: solid;
+    background: rgba(6, 182, 212, 0.06);
+    box-shadow: 0 0 40px rgba(6, 182, 212, 0.08), inset 0 0 40px rgba(6, 182, 212, 0.03);
+    transform: scale(1.01);
+}
+.drop-zone.dragover::before {
+    opacity: 1;
+}
+
+/* ── Risk Gauge ───────────────────────────────────────────────── */
+.risk-gauge-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+}
+.risk-gauge-container svg {
+    transform: rotate(-90deg);
+}
+.risk-gauge-container svg circle {
+    fill: none;
+    stroke-linecap: round;
+}
+.gauge-bg {
+    stroke: rgba(30, 41, 59, 0.6);
+}
+.gauge-fill {
+    stroke-dasharray: 440;
+    stroke-dashoffset: 440;
+    transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+                stroke 0.5s ease;
+    filter: drop-shadow(0 0 6px var(--gauge-glow, rgba(6, 182, 212, 0.4)));
+}
+.risk-gauge-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Supply Chain Path ────────────────────────────────────────── */
+.chain-container {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 16px 4px;
+    scrollbar-width: thin;
+}
+.chain-node {
+    flex-shrink: 0;
+    min-width: 140px;
+    max-width: 180px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chain-node:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+.chain-arrow {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px;
+    min-width: 60px;
+}
+.chain-arrow-line {
+    display: flex;
+    align-items: center;
+    color: rgba(100, 116, 139, 0.5);
+    font-size: 18px;
+    letter-spacing: -2px;
+    white-space: nowrap;
+}
+
+/* ── Metric Cards ─────────────────────────────────────────────── */
+.metric-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--metric-accent, #06b6d4), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(148, 163, 184, 0.15);
+}
+.metric-card:hover::before {
+    opacity: 1;
+}
+
+/* ── Status Badge Pulse ───────────────────────────────────────── */
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+}
+.pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Fade In Up Animation ─────────────────────────────────────── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+    animation: fadeInUp 0.45s ease-out forwards;
+}
+
+/* ── Staggered Children ───────────────────────────────────────── */
+.stagger > * {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger > *:nth-child(5) { animation-delay: 0.20s; }
+.stagger > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger > *:nth-child(8) { animation-delay: 0.32s; }
+
+/* ── Scale In Animation ───────────────────────────────────────── */
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+.scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ── Loading Spinner ──────────────────────────────────────────── */
+@keyframes spin-smooth {
+    to { transform: rotate(360deg); }
+}
+.loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(6, 182, 212, 0.12);
+    border-top-color: #06b6d4;
+    border-radius: 50%;
+    animation: spin-smooth 0.8s linear infinite;
+}
+.loading-spinner-sm {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+}
+
+/* ── Progress Bar ─────────────────────────────────────────────── */
+.progress-bar-track {
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(6, 182, 212, 0.1);
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #06b6d4, #22d3ee);
+    transition: width 0.4s ease;
+}
+
+/* ── Indeterminate Progress ───────────────────────────────────── */
+@keyframes indeterminate {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+.progress-indeterminate .progress-bar-fill {
+    width: 30% !important;
+    animation: indeterminate 1.4s ease-in-out infinite;
+}
+
+/* ── Glow Effects ─────────────────────────────────────────────── */
+.glow-cyan  { box-shadow: 0 0 20px rgba(6, 182, 212, 0.12); }
+.glow-red   { box-shadow: 0 0 20px rgba(239, 68, 68, 0.12); }
+.glow-amber { box-shadow: 0 0 20px rgba(245, 158, 11, 0.12); }
+.glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.12); }
+
+/* ── Query Suggestion Chips ───────────────────────────────────── */
+.suggestion-chip {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.suggestion-chip:hover {
+    background: rgba(6, 182, 212, 0.1);
+    border-color: rgba(6, 182, 212, 0.35);
+    color: #22d3ee;
+}
+
+/* ── Custom Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.3);
+}
+
+/* ── Toast Notifications ──────────────────────────────────────── */
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: slideInRight 0.3s ease-out forwards; }
+.toast-exit  { animation: slideOutRight 0.3s ease-in forwards; }
+
+/* ── Hover Lift ───────────────────────────────────────────────── */
+.hover-lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Section Divider ──────────────────────────────────────────── */
+.section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+}
+
+/* ── Risk Level Colors (utility) ──────────────────────────────── */
+.risk-critical { color: #f87171; }
+.risk-high     { color: #fb923c; }
+.risk-medium   { color: #fbbf24; }
+.risk-low      { color: #4ade80; }
+.risk-none     { color: #94a3b8; }
+
+.bg-risk-critical { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); }
+.bg-risk-high     { background: rgba(249, 115, 22, 0.12); border-color: rgba(249, 115, 22, 0.25); }
+.bg-risk-medium   { background: rgba(234, 179, 8, 0.12);  border-color: rgba(234, 179, 8, 0.25); }
+.bg-risk-low      { background: rgba(34, 197, 94, 0.12);  border-color: rgba(34, 197, 94, 0.25); }
+.bg-risk-none     { background: rgba(100, 116, 139, 0.12); border-color: rgba(100, 116, 139, 0.25); }
+
+/* ── Markdown-like Summary Rendering ──────────────────────────── */
+.prose-dark h1, .prose-dark h2, .prose-dark h3 {
+    color: #f1f5f9;
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+.prose-dark p {
+    color: #cbd5e1;
+    line-height: 1.7;
+    margin-bottom: 0.75em;
+}
+.prose-dark ul, .prose-dark ol {
+    color: #cbd5e1;
+    padding-left: 1.25em;
+    margin-bottom: 0.75em;
+}
+.prose-dark li { margin-bottom: 0.25em; }
+.prose-dark strong { color: #f1f5f9; }

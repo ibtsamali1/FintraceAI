@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "c:\\Python314\\python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/venv/Lib/site-packages",
+    "${workspaceFolder}/graph_rag_ai"
+  ]
+}

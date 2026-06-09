@@ -1,0 +1,377 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}FinTrace — Supply Chain Intelligence Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ═══ Toast Container ═══ -->
+<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+<!-- ═══ Header ═══ -->
+<header class="glass sticky top-0 z-40 border-b border-slate-800/50">
+    <div class="max-w-[1920px] mx-auto px-6 py-3 flex items-center justify-between">
+        <!-- Brand -->
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight gradient-text leading-tight">FinTrace</h1>
+                <p class="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Agentic GraphRAG Monitor</p>
+            </div>
+        </div>
+
+        <!-- Graph Stats -->
+        <div id="graph-stats" class="hidden lg:flex items-center gap-4">
+            <div class="flex items-center gap-2 text-xs">
+                <div class="w-2 h-2 rounded-full bg-cyan-400 pulse-dot"></div>
+                <span class="text-slate-400">Neo4j</span>
+                <span id="stat-nodes" class="text-slate-200 font-semibold">—</span>
+                <span class="text-slate-500">nodes</span>
+                <span class="text-slate-600 mx-1">·</span>
+                <span id="stat-rels" class="text-slate-200 font-semibold">—</span>
+                <span class="text-slate-500">rels</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ═══ Main Layout ═══ -->
+<main class="max-w-[1920px] mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-60px)]">
+
+    <!-- ─── Left Sidebar ─── -->
+    <aside class="w-full lg:w-[380px] xl:w-[400px] flex-shrink-0 border-r border-slate-800/40 overflow-y-auto p-5 space-y-5">
+
+        <!-- Upload Panel -->
+        <section>
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                Document Ingestion
+            </h2>
+            <div id="drop-zone" class="drop-zone rounded-xl p-8 text-center relative">
+                <input type="file" id="file-input" class="hidden" multiple accept=".pdf">
+                <div class="pointer-events-none relative z-10">
+                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                    </div>
+                    <p class="text-sm font-medium text-slate-300 mb-1">Drop PDF files here</p>
+                    <p class="text-xs text-slate-500">or click to browse · multiple files supported</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Uploads -->
+        <div id="active-uploads" class="space-y-2 hidden"></div>
+
+        <!-- Section Divider -->
+        <div class="section-divider"></div>
+
+        <!-- Recent Documents -->
+        <section>
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                Processed Documents
+            </h2>
+            <div id="documents-list" class="space-y-2 max-h-[240px] overflow-y-auto">
+                {% for doc in documents %}
+                <div class="glass-lighter rounded-lg px-3 py-2.5 hover-lift" data-doc-id="{{ doc.pk }}">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-medium text-slate-200 truncate" title="{{ doc.title }}">{{ doc.title }}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                {% if doc.status == "completed" %}
+                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Completed
+                                </span>
+                                <span class="text-[10px] text-slate-500">{{ doc.nodes_extracted }} nodes · {{ doc.relationships_extracted }} rels</span>
+                                {% elif doc.status == "processing" %}
+                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-cyan-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 pulse-dot"></span>Processing
+                                </span>
+                                {% elif doc.status == "failed" %}
+                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-red-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>Failed
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Pending
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-slate-600 flex-shrink-0">{{ doc.created_at|date:"M d" }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-600 italic py-4 text-center">No documents uploaded yet</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Section Divider -->
+        <div class="section-divider"></div>
+
+        <!-- News Events -->
+        <section>
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"/></svg>
+                Active Disruptions
+            </h2>
+            <div id="news-events" class="space-y-2 max-h-[220px] overflow-y-auto">
+                {% for event in news_events %}
+                <div class="glass-lighter rounded-lg px-3 py-2.5 hover-lift">
+                    <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full
+                            {% if event.severity == 'critical' %}bg-red-500
+                            {% elif event.severity == 'high' %}bg-orange-500
+                            {% elif event.severity == 'medium' %}bg-amber-500
+                            {% elif event.severity == 'low' %}bg-green-500
+                            {% else %}bg-slate-500{% endif %}
+                        "></span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-medium text-slate-200 leading-snug line-clamp-2">{{ event.title }}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-medium">{{ event.event_type }}</span>
+                                <span class="text-[10px] text-slate-600">{{ event.created_at|date:"M d, H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-slate-600 italic py-4 text-center">No disruption events detected yet</p>
+                {% endfor %}
+            </div>
+        </section>
+    </aside>
+
+    <!-- ─── Main Content Area ─── -->
+    <section class="flex-1 overflow-y-auto p-5 lg:p-8">
+
+        <!-- Query Section -->
+        <div class="max-w-4xl mx-auto mb-6">
+            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+                Risk Query Agent
+            </h2>
+            <div class="glass rounded-xl p-1 flex items-center gap-2">
+                <input
+                    type="text"
+                    id="query-input"
+                    class="flex-1 bg-transparent px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
+                    placeholder="Ask about supply chain risks… e.g., 'Will the Suez Canal closure affect NordOil?'"
+                >
+                <button
+                    id="query-submit"
+                    class="flex-shrink-0 px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 text-white text-sm font-semibold hover:from-cyan-500 hover:to-cyan-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+                    Analyze
+                </button>
+            </div>
+
+            <!-- Query Suggestions -->
+            <div id="query-suggestions" class="flex flex-wrap gap-2 mt-3">
+                <button class="suggestion-chip text-[11px] px-3 py-1.5 rounded-full border border-slate-700/50 text-slate-400 font-medium"
+                        data-query="Will the Suez Canal closure affect our supply chain?">
+                    Suez Canal risk?
+                </button>
+                <button class="suggestion-chip text-[11px] px-3 py-1.5 rounded-full border border-slate-700/50 text-slate-400 font-medium"
+                        data-query="How does NordOil's supplier network look? What are the key dependencies?">
+                    NordOil dependencies
+                </button>
+                <button class="suggestion-chip text-[11px] px-3 py-1.5 rounded-full border border-slate-700/50 text-slate-400 font-medium"
+                        data-query="Are there any critical risks in our current supply chain operations?">
+                    Current critical risks
+                </button>
+                <button class="suggestion-chip text-[11px] px-3 py-1.5 rounded-full border border-slate-700/50 text-slate-400 font-medium"
+                        data-query="Which ports and shipping routes are most vulnerable to disruption?">
+                    Vulnerable routes
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="query-loading" class="hidden max-w-4xl mx-auto">
+            <div class="glass rounded-2xl p-12 text-center scale-in">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <p class="text-sm font-medium text-slate-300 mb-1">Analyzing supply chain risks…</p>
+                <p class="text-xs text-slate-500">The LangGraph agent is querying the knowledge graph and correlating disruption data</p>
+            </div>
+        </div>
+
+        <!-- Empty State (shown when no query yet) -->
+        <div id="empty-state" class="max-w-4xl mx-auto">
+            <div class="glass rounded-2xl p-12 text-center">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/10 flex items-center justify-center">
+                    <svg class="w-10 h-10 text-cyan-500/60" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-200 mb-2">Supply Chain Intelligence</h3>
+                <p class="text-sm text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+                    Upload supply chain documents to build your knowledge graph, then ask natural-language questions to receive AI-powered risk assessments.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto stagger">
+                    <div class="glass-lighter rounded-xl p-4 text-center">
+                        <div class="text-2xl mb-2">📄</div>
+                        <p class="text-[11px] font-medium text-slate-300">Upload PDFs</p>
+                        <p class="text-[10px] text-slate-500 mt-1">Contracts & reports</p>
+                    </div>
+                    <div class="glass-lighter rounded-xl p-4 text-center">
+                        <div class="text-2xl mb-2">🔗</div>
+                        <p class="text-[11px] font-medium text-slate-300">Build Graph</p>
+                        <p class="text-[10px] text-slate-500 mt-1">Auto-extract entities</p>
+                    </div>
+                    <div class="glass-lighter rounded-xl p-4 text-center">
+                        <div class="text-2xl mb-2">🛡️</div>
+                        <p class="text-[11px] font-medium text-slate-300">Assess Risks</p>
+                        <p class="text-[10px] text-slate-500 mt-1">AI-powered analysis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ Results Section (hidden by default) ═══ -->
+        <div id="results-section" class="hidden max-w-4xl mx-auto space-y-5">
+
+            <!-- Risk Overview Row -->
+            <div class="flex flex-col md:flex-row gap-5">
+
+                <!-- Risk Gauge -->
+                <div class="glass rounded-2xl p-6 flex flex-col items-center justify-center md:w-[240px] flex-shrink-0">
+                    <div class="risk-gauge-container mb-3">
+                        <svg viewBox="0 0 180 180" width="180" height="180">
+                            <circle class="gauge-bg" cx="90" cy="90" r="70" stroke-width="10"/>
+                            <circle id="gauge-circle" class="gauge-fill" cx="90" cy="90" r="70" stroke-width="10" stroke="#06b6d4"/>
+                        </svg>
+                        <div class="risk-gauge-label">
+                            <span id="risk-percent" class="text-3xl font-black text-slate-100">0%</span>
+                            <span id="risk-label" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">NONE</span>
+                        </div>
+                    </div>
+                    <div id="risk-badge" class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border bg-risk-none">
+                        No Risk
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="flex-1 grid grid-cols-2 gap-3">
+                    <div class="metric-card glass rounded-xl p-4" style="--metric-accent: #06b6d4;">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Entities at Risk</span>
+                        </div>
+                        <p id="metric-entities" class="text-2xl font-bold text-slate-100">0</p>
+                    </div>
+                    <div class="metric-card glass rounded-xl p-4" style="--metric-accent: #ef4444;">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Critical Threats</span>
+                        </div>
+                        <p id="metric-critical" class="text-2xl font-bold text-slate-100">0</p>
+                    </div>
+                    <div class="metric-card glass rounded-xl p-4" style="--metric-accent: #f59e0b;">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605"/></svg>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Max Depth Reached</span>
+                        </div>
+                        <p id="metric-depth" class="text-2xl font-bold text-slate-100">0</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">dependency hops</p>
+                    </div>
+                    <div class="metric-card glass rounded-xl p-4" style="--metric-accent: #8b5cf6;">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-7 h-7 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                                <svg class="w-3.5 h-3.5 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"/></svg>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Active Disruptions</span>
+                        </div>
+                        <p id="metric-disruptions" class="text-2xl font-bold text-slate-100">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supply Chain Path -->
+            <div class="glass rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+                    Supply Chain Dependency Path
+                </h3>
+                <div id="supply-chain-path" class="chain-container">
+                    <p class="text-xs text-slate-500 italic">No path data available</p>
+                </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div class="glass rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                    Executive Summary
+                </h3>
+                <div id="executive-summary" class="prose-dark text-sm leading-relaxed text-slate-300"></div>
+            </div>
+
+            <!-- Root Cause Analysis (Reasoning) -->
+            <div class="glass rounded-2xl p-5">
+                <button id="reasoning-toggle" class="w-full text-left text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center justify-between gap-2 hover:text-slate-300 transition-colors">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"/></svg>
+                        Root Cause Analysis &amp; Agent Reasoning
+                    </span>
+                    <svg id="reasoning-chevron" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                </button>
+                <div id="reasoning-content" class="hidden mt-4">
+                    <pre id="reasoning-text" class="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap font-mono bg-slate-900/50 rounded-lg p-4 max-h-[400px] overflow-y-auto"></pre>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="glass rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
+                    Recommendations
+                </h3>
+                <div id="recommendations-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Impacted Entities Table -->
+            <div class="glass rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+                    Impacted Entities Detail
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="text-left text-slate-500 border-b border-slate-800/50">
+                                <th class="pb-2 pr-4 font-medium">Entity</th>
+                                <th class="pb-2 pr-4 font-medium">Type</th>
+                                <th class="pb-2 pr-4 font-medium">Depth</th>
+                                <th class="pb-2 pr-4 font-medium">Risk</th>
+                                <th class="pb-2 font-medium">Path</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entities-table-body" class="divide-y divide-slate-800/30">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Timestamp -->
+            <p id="report-timestamp" class="text-[10px] text-slate-600 text-center pb-4"></p>
+        </div>
+
+    </section>
+</main>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'core/js/dashboard.js' %}"></script>
+{% endblock %}

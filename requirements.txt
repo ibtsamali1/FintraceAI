@@ -1,0 +1,46 @@
+# ──────────────────────────────────────────────────────────
+# FinTrace — Agentic GraphRAG Supply Chain Monitor
+# ──────────────────────────────────────────────────────────
+
+# Django
+django>=5.1
+
+# PDF processing
+pypdf>=4.0
+pymupdf>=1.24
+langchain>=0.3
+langchain-core>=0.3
+langchain-community>=0.3
+langchain-text-splitters>=0.3
+
+# LLM providers
+# OpenAI gpt-4o-mini (cloud inference — requires OPENAI_API_KEY)
+langchain-openai>=0.1
+openai>=1.30
+
+# Neo4j
+neo4j>=5.20
+
+# Pydantic v2 (strict schemas)
+pydantic>=2.7
+
+# LangGraph (agentic workflow)
+langgraph>=0.2
+
+# News fetching
+requests>=2.32
+feedparser>=6.0
+
+# Environment variable loading
+python-dotenv>=1.0
+python-decouple>=3.8
+
+# Task scheduling (for periodic news scanning)
+apscheduler>=3.10
+
+# Redis — caching, task queuing, session management
+redis>=5.0
+celery>=5.3
+
+# Caching and performance
+django-redis>=5.4
