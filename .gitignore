@@ -1,3 +1,14 @@
+# Environment variables
+.env
+
+# Other env files
+.env.local
+.env.development
+.env.production
+.env.test
+
+
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -5,7 +16,7 @@ build/
 dist/
 wheels/
 *.egg-info
-.env
+
 uv.lock
 # Virtual environments
 .venv
