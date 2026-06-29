@@ -134,7 +134,7 @@ def cache_chunk_embedding(
             # Cache metadata if provided
             if metadata:
                 try:
-                    meta_key = _make_meta_key(pdf_id, chunk_id)
+                    meta_key = cache_key.replace("embedding:", "metadata:")
                     cache_data(meta_key, metadata, ttl=ttl)
                 except Exception as e:
                     logger.warning(f"Failed to cache metadata: {e}")
@@ -193,7 +193,8 @@ def get_chunk_metadata(pdf_id: str, chunk_id: str) -> Optional[Dict]:
         return None
     
     try:
-        meta_key = _make_meta_key(pdf_id, chunk_id)
+        cache_key = _make_cache_key(pdf_id, chunk_id)
+        meta_key = cache_key.replace("embedding:", "metadata:")
         return get_cached_data(meta_key)
     except Exception as e:
         logger.warning(f"Error retrieving metadata: {e}")
@@ -274,11 +275,11 @@ def get_chunk_embeddings_batch(
         embeddings_dict = get_embeddings_batch(cache_keys)
         
         # Re-map to chunk_id keys
-        result = {}
-        for key, embedding in embeddings_dict.items():
-            parts = key.split(":")
-            if len(parts) >= 4 and parts[0] == "pdf" and parts[1] == pdf_id:
-                result[parts[3]] = embedding
+        result = {
+            chunk_id: embedding
+            for (pdf, chunk_id), embedding in embeddings_dict.items()
+            if pdf == pdf_id
+        }
         
         # Update stats
         hits = len(result)

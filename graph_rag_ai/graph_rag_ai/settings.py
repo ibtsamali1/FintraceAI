@@ -161,7 +161,7 @@ LOGGING = {
         "core": {
             "handlers": ["console"],
             "level": "DEBUG",
-            "propagate": False,
+            "propagate": True,
         },
     },
 }
